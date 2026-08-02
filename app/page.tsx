@@ -4,7 +4,7 @@ import { Suspense } from "react"
 import { Hero } from "./components/Hero"
 import { ContentSection } from "./components/ContentSection"
 import { ContinueWatching } from "./components/ContinueWatching"
-import { GenreOnboarding } from "./components/GenreOnboarding"
+import { Onboarding } from "./components/Onboarding"
 import { Navigation } from "./components/Navigation"
 import { useAppStore } from "@/stores/useAppStore"
 import {
@@ -115,7 +115,7 @@ function GenreTVSection({ genreId, title }: { genreId: string; title: string }) 
 export default function HomePage() {
   return (
     <>
-      <GenreOnboarding />
+      <Onboarding />
       <Suspense fallback={<HomeSkeleton />}>
         <HomeContent />
       </Suspense>
