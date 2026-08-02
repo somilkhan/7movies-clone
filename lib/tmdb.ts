@@ -118,6 +118,13 @@ export async function getTVGenres() {
 }
 
 // Discover
+export async function discoverTV(params: Record<string, string>) {
+  return fetchTMDB<{ results: Media[]; page: number; total_pages: number }>(
+    "/discover/tv",
+    params
+  )
+}
+
 export async function discoverMovies(params: Record<string, string>) {
   return fetchTMDB<{ results: Media[]; page: number; total_pages: number }>(
     "/discover/movie",
