@@ -79,3 +79,130 @@ None.
 - Continue Watching saves to localStorage (`7movies-continue`).
 - All keyboard shortcuts ignore input fields.
 - Git push was done via GitHub Contents API (13 individual commits) due to sandbox network timeout.
+
+
+---
+
+## 🧠 How to Use This Handoff (Agent Workflow)
+
+This project uses a **stop-and-continue** handoff pattern. Here's how it works:
+
+### The Pattern
+```
+Turn N, Step 20:  "Stopping now. HANDOFF.md written. Run `git status` in next turn."
+Turn N+1, Step 1: Read HANDOFF.md → "Oh, I need to finish X, Y, Z" → Do it
+```
+
+### Why This Works
+1. **Atomic saves** — Every chunk of work gets documented before the agent stops
+2. **Zero context loss** — Next agent reads HANDOFF.md first, knows exact state
+3. **No "what was I doing?"** — The file tells you what's done and what's next
+4. **Bisectable** — If something breaks, you know which chat introduced it
+
+### For New Developers Joining This Project
+
+**Step 1: Read HANDOFF.md first**
+```bash
+git pull origin main
+cat HANDOFF.md
+```
+
+**Step 2: Check current state**
+```bash
+git log --oneline -5          # See recent commits
+git status                     # See uncommitted changes
+npm run build                  # See if build passes
+```
+
+**Step 3: Pick up from "What's Next"**
+The HANDOFF.md always has a "What's Next" section. Start there.
+
+**Step 4: After you finish something, update HANDOFF.md**
+```bash
+# Edit HANDOFF.md — mark done items, add new blockers, update "What's Next"
+git add HANDOFF.md
+```
+
+### For AI Agents
+
+**When you start a new chat session:**
+1. Read `HANDOFF.md` from GitHub (or local repo)
+2. Run `git log --oneline -3` to verify state matches handoff
+3. Check if there are uncommitted local changes
+4. Start working on the first item in "What's Next"
+
+**When you're about to hit a limit (time, tokens, tool calls):**
+1. Finish the current file/function you're editing
+2. Commit: `git add . && git commit -m "wip: what you were doing"`
+3. Update `HANDOFF.md` with:
+   - What you just completed
+   - What you were in the middle of
+   - Exact next steps
+   - Any blockers or errors you encountered
+4. Push: `git push origin main`
+5. Write in your final message: *"Stopping now. HANDOFF.md updated. Run `git status` in next turn."*
+
+**When the next agent continues:**
+```
+User: "continue"
+Agent: (reads HANDOFF.md) → "I see I need to finish X, Y, Z" → Does it
+```
+
+### Common Pitfalls to Avoid
+
+| ❌ Bad | ✅ Good |
+|--------|---------|
+| "I did some stuff, figure it out" | "Completed A, B. In the middle of C (line 45 of file.tsx). Next: finish C, then do D." |
+| No commit before stopping | Commit with `wip:` prefix, push it |
+| No HANDOFF update | Always update HANDOFF.md before stopping |
+| Vague "fix bugs" in What's Next | Specific: "Fix responsive breakpoint at 375px in Hero.tsx" |
+| Deleting old handoff entries | Keep history — append new sections, don't overwrite |
+
+### Handoff Template (Copy-Paste for New Chats)
+
+```markdown
+# 🔄 HANDOFF — Chat N
+
+## Status: [IN PROGRESS / COMPLETE / BLOCKED]
+
+## Last Commit
+`SHA` — "message"
+
+## What's Done
+- [x] Item A
+- [x] Item B
+
+## What's In Progress
+- [ ] Item C — stopped at line 45 of `file.tsx`, need to finish `handleSubmit()`
+
+## What's Next
+1. Finish Item C
+2. Do Item D
+3. Run `npm run build` and fix errors
+
+## Blockers
+- None / `npm install` times out in sandbox
+- / `useTMDB` hook throws on null response
+
+## Design Tokens
+(same as before)
+
+## Notes
+- Any special context the next agent needs
+```
+
+### Quick Commands Cheat Sheet
+
+```bash
+# Start of every new chat
+git pull origin main
+cat HANDOFF.md
+npm install          # if node_modules missing
+npm run build        # check current state
+
+# Before stopping
+git add .
+git commit -m "wip: what you were doing"
+git push origin main
+# Then update HANDOFF.md and push again
+```
