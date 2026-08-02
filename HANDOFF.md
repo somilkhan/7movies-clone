@@ -206,3 +206,27 @@ git commit -m "wip: what you were doing"
 git push origin main
 # Then update HANDOFF.md and push again
 ```
+
+
+### Critical: Commit Email Must Match GitHub
+
+**Vercel blocks deploys** if the commit author email doesn't match a GitHub account.
+
+**Before every commit, run:**
+```bash
+git config user.email "81418397+somilkhan@users.noreply.github.com"
+git config user.name "Sahil"
+```
+
+**If you see this Vercel error:**
+> "The deployment was blocked because the commit email ... could not be matched to a GitHub account"
+
+**Fix:** Amend commits with correct author:
+```bash
+export GIT_AUTHOR_EMAIL="81418397+somilkhan@users.noreply.github.com"
+export GIT_AUTHOR_NAME="Sahil"
+export GIT_COMMITTER_EMAIL="81418397+somilkhan@users.noreply.github.com"
+export GIT_COMMITTER_NAME="Sahil"
+git rebase --root --exec "git commit --amend --no-edit"
+# Then force push via GitHub API (git push times out in sandbox)
+```
