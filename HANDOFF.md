@@ -1,5 +1,9 @@
 # 🔄 HANDOFF — Chat 4 COMPLETE
 
+> **New agent? Read `.github/AGENT_INSTRUCTIONS.md` FIRST.**  
+> That file has the pre-flight checklist, common blockers, and the handoff pattern.  
+> Then read this HANDOFF.md for project-specific state.
+
 ## Status: PRODUCTION READY ✅
 
 ## Last Commit
