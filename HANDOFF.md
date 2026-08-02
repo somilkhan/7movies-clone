@@ -7,7 +7,7 @@
 ## Status: PRODUCTION READY ✅
 
 ## Last Commit
-`TBD` — "feat: bottom-sheet profile page + toggle-switch fix"
+`TBD` — "fix: add missing CastList component"
 
 ## Live URL
 https://7movies-clone.vercel.app
@@ -22,8 +22,9 @@ https://7movies-clone.vercel.app
 - [x] **Compact preferences** — Ambience as 3 pill buttons, Spoiler Protection toggle, Autoplay toggle, Clear History button
 - [x] **Footer stats** — Watchlist count + app version
 
-### Bug Fix
+### Bug Fixes
 - [x] **Added missing `.toggle-switch` CSS** — Styles were referenced in settings but never defined in `globals.css`. Toggles now render correctly with 48×28px track, 24px thumb, white/black active state.
+- [x] **Added missing `CastList` component** — `movie/[id]/page.tsx` and `tv/[id]/page.tsx` imported `CastList` but the file never existed. Created `app/components/CastList.tsx` with horizontal scrolling cast avatars (72px circles, name + character below).
 
 ### Accessibility
 - [x] `role="dialog"` and `aria-modal="true"` on bottom sheet container
@@ -33,7 +34,7 @@ https://7movies-clone.vercel.app
 - [x] `prefers-reduced-motion` respected via `useReducedMotion()`
 
 ## What's Next
-1. **Redeploy** — Vercel auto-deploy on push. Verify `/settings` renders correctly.
+1. **Verify deploy** — Vercel should auto-deploy. Check `/settings` and `/movie/123` to confirm no build errors.
 2. **Lighthouse audit** — Target 90+ on Performance, Accessibility, Best Practices, SEO
 3. **Responsive QA** — Test on 320px, 375px, 768px, 1024px+ breakpoints
 4. **Pixel-perfect refinements** — Compare deployed site vs original 7movies.in screenshot-by-screenshot
