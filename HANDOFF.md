@@ -7,7 +7,7 @@
 ## Status: PRODUCTION READY ✅
 
 ## Last Commit
-`TBD` — "fix: bump next to 15.1.9 — actual CVE-2025-66478 patch"
+`TBD` — "fix: search results grid, loading skeleton, empty state"
 
 ## Live URL
 https://7movies-clone.vercel.app
@@ -15,33 +15,58 @@ https://7movies-clone.vercel.app
 ## What's Done (Chat 5)
 
 ### Profile Page (`/settings`)
-- [x] **Bottom sheet aesthetic** — Rounded top corners (`rounded-t-card`), drag handle, rises from bottom animation
+- [x] **Bottom sheet aesthetic** — Rounded top corners, drag handle, rises from bottom animation
 - [x] **Profile header** — Large avatar placeholder, "Guest" label, sign-in CTA copy
-- [x] **Auth buttons** — "Sign In" (primary white) + "Create Account" (secondary outline) with icons
+- [x] **Auth buttons** — "Sign In" (primary white) + "Create Account" (secondary outline)
 - [x] **Community links** — Discord (#5865F2) and Telegram (#229ED9) with brand colors
-- [x] **Compact preferences** — Ambience as 3 pill buttons, Spoiler Protection toggle, Autoplay toggle, Clear History button
+- [x] **Ads blocked** row — "Session" badge, matches original UI
+- [x] **Compact preferences** — Ambience pills, Spoiler Protection toggle, Autoplay toggle, Clear History
 - [x] **Footer stats** — Watchlist count + app version
 
-### Bug Fixes
-- [x] **Added missing `.toggle-switch` CSS** — Styles were referenced in settings but never defined in `globals.css`.
-- [x] **Added missing `CastList` component** — `movie/[id]/page.tsx` and `tv/[id]/page.tsx` imported it but file never existed.
-- [x] **Fixed missing hook exports in `useTMDB.ts`** — Pages imported `useMovie`, `useCredits`, `useSimilar`, `useMovieVideos`, `useTVVideos`, `useSeasonEpisodes`, `useMovies`, `useTrending`, `usePopular`, `useTopRated`, `useNowPlaying`, `useTVShow` but none were exported.
+### Home Page (`/`)
+- [x] **20+ horizontal scroll sections** — Trending, Popular, Top Rated, Now Playing, Upcoming, 14 genre movie sections, Popular TV, Top Rated TV, 6 genre TV sections
+- [x] **"SCROLL TO EXPLORE"** indicator on every row
+- [x] **Skeleton loading** while data fetches
 
-### Security
-- [x] **Patched CVE-2025-66478** — Bumped `next` from 15.1.0 → 15.1.7 → **15.1.9** (official patched version for 15.1.x line per Next.js security advisory). `eslint-config-next` matched.
+### Movies Page (`/movies`)
+- [x] **Fixed empty page** — Now shows Popular, Top Rated, Now Playing, Upcoming + 14 genre rows
+- [x] **Horizontal scroll layout** matching original
+
+### TV Page (`/tv`)
+- [x] **Fixed empty page** — Now shows Trending, Popular, Top Rated + 10 genre rows
+- [x] **Horizontal scroll layout** matching original
+
+### Detail Page (`/movie/[id]`)
+- [x] **Stream server selector** — "VidRift · stable · fast" dropdown
+- [x] **"PREPARING YOUR STREAM"** UI with progress bar
+- [x] **Download & Share buttons**
+- [x] Cast list, More Like This section
+
+### Search Page (`/search`)
+- [x] **Actual results grid** — 2-5 column responsive poster grid
+- [x] **Loading skeleton** while searching
+- [x] **Empty state** with "No results found"
+- [x] **Trending tags** when no query entered
+
+### Bug Fixes
+- [x] **Added missing `.toggle-switch` CSS**
+- [x] **Added missing `CastList` component**
+- [x] **Fixed missing hook exports in `useTMDB.ts`**
+- [x] **Added `discoverTV` function in `tmdb.ts`**
+- [x] **Patched CVE-2025-66478** — Next.js 15.1.9
 
 ### Accessibility
-- [x] `role="dialog"` and `aria-modal="true"` on bottom sheet container
+- [x] `role="dialog"` and `aria-modal="true"` on bottom sheet
 - [x] `aria-label` on all toggle switches
 - [x] `role="radiogroup"` and `aria-checked` on ambience buttons
-- [x] `aria-hidden="true"` on all decorative icons
-- [x] `prefers-reduced-motion` respected via `useReducedMotion()`
+- [x] `aria-hidden="true"` on decorative icons
+- [x] `prefers-reduced-motion` respected
 
 ## What's Next
-1. **Verify deploy** — Vercel should auto-deploy with patched Next.js 15.1.9. Confirm no vulnerability warning.
-2. **Lighthouse audit** — Target 90+ on Performance, Accessibility, Best Practices, SEO
-3. **Responsive QA** — Test on 320px, 375px, 768px, 1024px+ breakpoints
-4. **Pixel-perfect refinements** — Compare deployed site vs original 7movies.in
+1. **Verify deploy** — Check all pages render correctly on mobile
+2. **Lighthouse audit** — Target 90+ on all metrics
+3. **Responsive QA** — Test breakpoints 320px–1440px
+4. **Pixel-perfect refinements** — Compare side-by-side with 7movies.in
 5. **PWA** — User explicitly said no PWA in Chat 1
 
 ## Design Tokens
