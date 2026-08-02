@@ -2,53 +2,93 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --bg: #0b0b0d;
-  --paper: #f3f0ea;
-  --muted: #929093;
-  --line: rgba(255, 255, 255, 0.12);
-  --accent: #e8e6e1;
-  --surface: #151519;
-  --surface-light: #1b1c20;
-  --ambient-strength: 0.11;
-}
-
 @layer base {
-  html {
-    scroll-behavior: smooth;
+  :root {
+    --bg: #000000;
+    --paper: #f3f0ea;
+    --surface: #151519;
+    --muted: #929093;
+    --line: rgba(255, 255, 255, 0.12);
+    --accent: #e8e6e1;
   }
 
   body {
-    background: radial-gradient(
-        circle at 10% 35%,
-        rgba(129, 99, 164, var(--ambient-strength)),
-        transparent 30%
-      ),
-      var(--bg);
-    color: #fff;
-    font-family: var(--font-manrope), sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    min-height: 100vh;
-    overflow-x: hidden;
+    @apply bg-black text-white antialiased;
+    font-feature-settings: "cv11", "ss01";
+    font-variation-settings: "opsz" 32;
   }
 
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  ::-webkit-scrollbar-thumb {
+  ::selection {
     background: rgba(255, 255, 255, 0.15);
-    border-radius: 3px;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/5 backdrop-blur-2xl;
+    border: 1px solid rgba(255, 255, 255, 0.08);
   }
 
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.25);
+  .media-card {
+    @apply transition-all duration-300;
+  }
+
+  .media-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  }
+
+  .poster-img {
+    @apply transition-transform duration-500;
+  }
+
+  .media-card:hover .poster-img {
+    transform: scale(1.05);
+  }
+
+  .content-scroll {
+    @apply flex gap-3 overflow-x-auto pb-4;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    scroll-snap-type: x mandatory;
+  }
+
+  .content-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scroll-snap-start {
+    scroll-snap-align: start;
+  }
+
+  .pick-card {
+    @apply transition-all duration-200;
+  }
+
+  .pick-card:hover {
+    transform: scale(1.02);
+  }
+
+  .ambient-glow {
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.055;
+    transition: opacity 0.5s ease;
+  }
+
+  .hero-fade {
+    background: linear-gradient(
+      to top,
+      #000000 0%,
+      rgba(0, 0, 0, 0.8) 30%,
+      rgba(0, 0, 0, 0.4) 60%,
+      transparent 100%
+    );
   }
 }
 
@@ -56,193 +96,7 @@
   .text-balance {
     text-wrap: balance;
   }
-
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .line-clamp-3 {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
 }
-
-/* Ambience themes */
-.ambience-subtle {
-  --ambient-strength: 0.055;
-}
-
-.ambience-standard {
-  --ambient-strength: 0.11;
-}
-
-.ambience-vivid {
-  --ambient-strength: 0.18;
-}
-
-/* Skeleton loading */
-.skeleton {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.05) 25%,
-    rgba(255, 255, 255, 0.1) 50%,
-    rgba(255, 255, 255, 0.05) 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite linear;
-  border-radius: 8px;
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-/* Horizontal scroll snap */
-.scroll-snap-x {
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-}
-
-.scroll-snap-start {
-  scroll-snap-align: start;
-}
-
-/* Glass morphism utilities */
-.glass {
-  background: rgba(11, 11, 13, 0.7);
-  backdrop-filter: blur(18px) saturate(150%);
-  -webkit-backdrop-filter: blur(18px) saturate(150%);
-}
-
-.glass-light {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-/* Navigation progress bar */
-.nav-progress {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 2px;
-  background: var(--accent);
-  z-index: 9999;
-  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
-}
-
-/* Media card hover */
-.media-card {
-  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.media-card:hover {
-  transform: scale(1.04);
-}
-
-.media-card .poster-img {
-  transition: transform 0.3s ease;
-}
-
-.media-card:hover .poster-img {
-  transform: scale(1.06);
-}
-
-/* Hero fade overlay */
-.hero-fade {
-  background: linear-gradient(
-    to top,
-    var(--bg) 0%,
-    rgba(11, 11, 13, 0.8) 30%,
-    rgba(11, 11, 13, 0.3) 60%,
-    transparent 100%
-  );
-}
-
-/* Detail backdrop fade */
-.detail-fade {
-  background: linear-gradient(
-    to top,
-    var(--bg) 0%,
-    rgba(11, 11, 13, 0.95) 25%,
-    rgba(11, 11, 13, 0.6) 55%,
-    transparent 100%
-  );
-}
-
-/* Toggle switch */
-.toggle-switch {
-  width: 40px;
-  height: 22px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 999px;
-  position: relative;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.toggle-switch[data-active="true"] {
-  background: var(--accent);
-}
-
-.toggle-switch i {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 18px;
-  height: 18px;
-  background: #fff;
-  border-radius: 50%;
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.toggle-switch[data-active="true"] i {
-  transform: translateX(18px);
-}
-
-/* Spoiler blur */
-.spoiler-blur {
-  filter: blur(8px);
-  transition: filter 0.3s ease;
-}
-
-.spoiler-blur:hover {
-  filter: blur(0);
-}
-
-/* Pick card */
-.pick-card {
-  transition: color 0.22s ease, border-color 0.22s ease, background-color 0.22s ease,
-    transform 0.22s ease;
-}
-
-.pick-card:hover {
-  transform: translate3d(0, -4px, 0);
-}
-
-.pick-card.picked {
-  border-color: var(--accent);
-}
-
 
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
