@@ -257,5 +257,90 @@ docs: update README with deploy URL
 
 ---
 
+---
+
+## 🐛 Bug Reporting Workflow
+
+### For Users (You)
+
+When you find a bug and want to open a new chat:
+
+**Option A: Quick report (fastest)**
+```
+"Bug: [short description]
+
+Screenshot: [attach image]
+URL: [page where it happens]
+Steps: 1. ... 2. ... 3. ...
+Expected: [what should happen]
+Actual: [what happens instead]"
+```
+
+**Option B: Detailed report (best for complex bugs)**
+```
+"Bug Report — 7movies-clone
+
+**Severity:** [Critical / Major / Minor / Cosmetic]
+**Page:** [e.g., /movie/123, homepage, /search]
+**Device:** [Mobile / Desktop / Tablet]
+**Browser:** [Chrome / Safari / Firefox]
+**Screen size:** [e.g., 375px, 1920px]
+
+**Steps to reproduce:**
+1. Go to ...
+2. Click ...
+3. Scroll to ...
+
+**Expected behavior:**
+[What you expected]
+
+**Actual behavior:**
+[What actually happened]
+
+**Screenshots / Screen recordings:**
+[Attach files]
+
+**Console errors (if any):**
+[Copy from DevTools → Console]
+```
+
+### For Agents (Receiving a Bug Report)
+
+When a user opens a new chat with a bug report:
+
+1. **Read this file** (`.github/AGENT_INSTRUCTIONS.md`)
+2. **Read `HANDOFF.md`** for current project state
+3. **Reproduce the bug** — open the deployed URL and follow the user's steps
+4. **Check the code** — find the relevant component/page
+5. **Fix it** — write the fix, test locally if possible
+6. **Update `HANDOFF.md`** — mark bug as fixed, add to "What's Done"
+7. **Update this file** — if the bug was a common pattern, add it to "Common Blockers"
+8. **Commit and push** with message: `fix: description of bug`
+9. **Tell the user:** "Fixed. Redeploying now. Check [URL] in 1 minute."
+
+### Bug Report Template (Copy-Paste)
+
+```markdown
+## Bug: [Title]
+
+**URL:** https://7movies-clone.vercel.app/[path]
+**Device:** [Mobile/Desktop]
+**Browser:** [Chrome/Safari/etc]
+
+### Steps
+1. [Step 1]
+2. [Step 2]
+3. [Step 3]
+
+### Expected
+[What should happen]
+
+### Actual
+[What happens]
+
+### Screenshot
+[Attach image]
+```
+
 *Last updated: 2026-08-03 by Chat 4 Agent*  
 *If you fix something new, add it to "Common Blockers" above and update this timestamp.*
