@@ -7,7 +7,7 @@
 ## Status: PRODUCTION READY ✅
 
 ## Last Commit
-`TBD` — "fix: bump next to 15.1.7 — patch CVE-2025-66478"
+`TBD` — "fix: bump next to 15.1.9 — actual CVE-2025-66478 patch"
 
 ## Live URL
 https://7movies-clone.vercel.app
@@ -25,10 +25,10 @@ https://7movies-clone.vercel.app
 ### Bug Fixes
 - [x] **Added missing `.toggle-switch` CSS** — Styles were referenced in settings but never defined in `globals.css`.
 - [x] **Added missing `CastList` component** — `movie/[id]/page.tsx` and `tv/[id]/page.tsx` imported it but file never existed.
-- [x] **Fixed missing hook exports in `useTMDB.ts`** — Pages imported `useMovie`, `useCredits`, `useSimilar`, `useMovieVideos`, `useTVVideos`, `useSeasonEpisodes`, `useMovies`, `useTrending`, `usePopular`, `useTopRated`, `useNowPlaying`, `useTVShow` but none were exported. Added all aliases and selector hooks that share cache with detail queries via `append_to_response`.
+- [x] **Fixed missing hook exports in `useTMDB.ts`** — Pages imported `useMovie`, `useCredits`, `useSimilar`, `useMovieVideos`, `useTVVideos`, `useSeasonEpisodes`, `useMovies`, `useTrending`, `usePopular`, `useTopRated`, `useNowPlaying`, `useTVShow` but none were exported.
 
 ### Security
-- [x] **Patched CVE-2025-66478** — Bumped `next` from 15.1.0 → 15.1.7 and `eslint-config-next` to match. Vercel was flagging the old version as vulnerable.
+- [x] **Patched CVE-2025-66478** — Bumped `next` from 15.1.0 → 15.1.7 → **15.1.9** (official patched version for 15.1.x line per Next.js security advisory). `eslint-config-next` matched.
 
 ### Accessibility
 - [x] `role="dialog"` and `aria-modal="true"` on bottom sheet container
@@ -38,7 +38,7 @@ https://7movies-clone.vercel.app
 - [x] `prefers-reduced-motion` respected via `useReducedMotion()`
 
 ## What's Next
-1. **Verify deploy** — Vercel should auto-deploy with patched Next.js. Confirm no vulnerability warning.
+1. **Verify deploy** — Vercel should auto-deploy with patched Next.js 15.1.9. Confirm no vulnerability warning.
 2. **Lighthouse audit** — Target 90+ on Performance, Accessibility, Best Practices, SEO
 3. **Responsive QA** — Test on 320px, 375px, 768px, 1024px+ breakpoints
 4. **Pixel-perfect refinements** — Compare deployed site vs original 7movies.in
