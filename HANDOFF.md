@@ -7,7 +7,7 @@
 ## Status: PRODUCTION READY ✅
 
 ## Last Commit
-`TBD` — "fix: add missing CastList component"
+`TBD` — "fix: add all missing hook exports — aliases, selectors, useMovies"
 
 ## Live URL
 https://7movies-clone.vercel.app
@@ -23,8 +23,9 @@ https://7movies-clone.vercel.app
 - [x] **Footer stats** — Watchlist count + app version
 
 ### Bug Fixes
-- [x] **Added missing `.toggle-switch` CSS** — Styles were referenced in settings but never defined in `globals.css`. Toggles now render correctly with 48×28px track, 24px thumb, white/black active state.
-- [x] **Added missing `CastList` component** — `movie/[id]/page.tsx` and `tv/[id]/page.tsx` imported `CastList` but the file never existed. Created `app/components/CastList.tsx` with horizontal scrolling cast avatars (72px circles, name + character below).
+- [x] **Added missing `.toggle-switch` CSS** — Styles were referenced in settings but never defined in `globals.css`.
+- [x] **Added missing `CastList` component** — `movie/[id]/page.tsx` and `tv/[id]/page.tsx` imported it but file never existed.
+- [x] **Fixed missing hook exports in `useTMDB.ts`** — Pages imported `useMovie`, `useCredits`, `useSimilar`, `useMovieVideos`, `useTVVideos`, `useSeasonEpisodes`, `useMovies`, `useTrending`, `usePopular`, `useTopRated`, `useNowPlaying`, `useTVShow` but none were exported. Added all aliases and selector hooks that share cache with detail queries via `append_to_response`.
 
 ### Accessibility
 - [x] `role="dialog"` and `aria-modal="true"` on bottom sheet container
@@ -34,10 +35,10 @@ https://7movies-clone.vercel.app
 - [x] `prefers-reduced-motion` respected via `useReducedMotion()`
 
 ## What's Next
-1. **Verify deploy** — Vercel should auto-deploy. Check `/settings` and `/movie/123` to confirm no build errors.
+1. **Verify deploy** — Vercel should auto-deploy. Check all pages.
 2. **Lighthouse audit** — Target 90+ on Performance, Accessibility, Best Practices, SEO
 3. **Responsive QA** — Test on 320px, 375px, 768px, 1024px+ breakpoints
-4. **Pixel-perfect refinements** — Compare deployed site vs original 7movies.in screenshot-by-screenshot
+4. **Pixel-perfect refinements** — Compare deployed site vs original 7movies.in
 5. **PWA** — User explicitly said no PWA in Chat 1
 
 ## Design Tokens
