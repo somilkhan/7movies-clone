@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 import {
   getTrendingMovies, getPopularMovies, getTopRatedMovies, getNowPlayingMovies, getUpcomingMovies,
   getTrendingTV, getPopularTV, getTopRatedTV, getMovieDetails, getTVDetails, getSeasonDetails,
-  searchMulti, getAnime, discoverMovies, getMovieGenres, getTVGenres,
+  searchMulti, getAnime, discoverMovies, getMovieGenres, getTVGenres, discoverTV,
 } from "@/lib/tmdb"
 import { Media, Movie, TVShow, Season, Episode } from "@/types"
 
@@ -125,6 +125,14 @@ export function useDiscoverByGenre(genreId: string, page = "1") {
   return useQuery({
     queryKey: ["discover", genreId, page],
     queryFn: () => discoverMovies({ with_genres: genreId, page, sort_by: "popularity.desc" }),
+    enabled: !!genreId,
+  })
+}
+
+export function useDiscoverTVByGenre(genreId: string, page = "1") {
+  return useQuery({
+    queryKey: ["discoverTV", genreId, page],
+    queryFn: () => discoverTV({ with_genres: genreId, page, sort_by: "popularity.desc" }),
     enabled: !!genreId,
   })
 }
