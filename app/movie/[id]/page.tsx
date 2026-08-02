@@ -1,111 +1,187 @@
 "use client"
 
-import { useParams, useRouter } from "next/navigation"
-import { useMovie, useCredits, useSimilar, useMovieVideos } from "@/lib/hooks/useTMDB"
-import { DetailHero } from "@/app/components/DetailHero"
-import { ContentSection } from "@/app/components/ContentSection"
-import { CastList } from "@/app/components/CastList"
-import { EpisodeCard } from "@/app/components/EpisodeCard"
-import { ContinueWatching } from "@/app/components/ContinueWatching"
+import { use } from "react"
 import { motion } from "framer-motion"
-import { X, Server, Download, Share2 } from "lucide-react"
+import { Play, Plus, Check, Star, Clock, Calendar, ChevronDown, Download, Share2 } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
-import { useReducedMotion } from "@/app/components/ReducedMotionProvider"
+import { useMovie, useCredits, useSimilar, useMovieVideos } from "@/lib/hooks/useTMDB"
+import { useAppStore } from "@/stores/useAppStore"
+import { getImageUrl, getYear, formatRuntime } from "@/lib/utils"
+import { DetailHero } from "../components/DetailHero"
+import { CastList } from "../components/CastList"
+import { ContentSection } from "../components/ContentSection"
+import { Navigation } from "../components/Navigation"
+import { toast } from "@/app/components/Toast"
+import { cn } from "@/lib/utils"
 
-export default function MovieDetailPage() {
-  const params = useParams()
-  const router = useRouter()
-  const id = Number(params.id)
-  const { data: movie, isLoading } = useMovie(id)
-  const { data: credits } = useCredits(id, "movie")
-  const { data: similar } = useSimilar(id, "movie")
-  const { data: videos } = useMovieVideos(id)
-  const prefersReducedMotion = useReducedMotion()
+export default function MovieDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
+  const { data: movie, isLoading } = useMovie(Number(id))
+  const { data: credits } = useCredits(Number(id), "movie")
+  const { data: similar } = useSimilar(Number(id), "movie")
+  const { data: videos } = useMovieVideos(Number(id))
+  const { addToWatchlist, removeFromWatchlist, isInWatchlist } = useAppStore()
 
-  if (isLoading) {
+  const inWatchlist = movie ? isInWatchlist(movie.id) : false
+
+  const handleWatchlistToggle = () => {
+    if (!movie) return
+    if (inWatchlist) {
+      removeFromWatchlist(movie.id)
+      toast(`Removed "${movie.title}" from watchlist`, "info")
+    } else {
+      addToWatchlist(movie.id, "movie")
+      toast(`Added "${movie.title}" to watchlist`, "success")
+    }
+  }
+
+  if (isLoading || !movie) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
-      </div>
+      <main className="min-h-screen bg-black">
+        <div className="aspect-[16/9] animate-pulse bg-white/[0.04]" />
+        <div className="px-5 py-8">
+          <div className="h-8 w-3/4 animate-pulse rounded bg-white/[0.04]" />
+          <div className="mt-2 h-4 w-1/2 animate-pulse rounded bg-white/[0.04]" />
+        </div>
+      </main>
     )
   }
 
-  if (!movie) return <div className="p-8 text-white">Movie not found</div>
-
-  const trailerKey = videos?.results?.find((v: any) => v.type === "Trailer" && v.site === "YouTube")?.key
+  const year = getYear(movie.release_date)
+  const trailer = videos?.results?.find((v: any) => v.type === "Trailer" && v.site === "YouTube")
+  const trailerKey = trailer?.key
 
   return (
-    <main className="min-h-screen">
-      {/* Close button */}
-      <motion.button initial={prefersReducedMotion ? false : { opacity: 0 }} animate={{ opacity: 1 }}
-        onClick={() => router.push("/")}
-        className="fixed right-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md transition-colors hover:bg-black/70"
-        aria-label="Close">
-        <X size={20} aria-hidden="true" />
-      </motion.button>
+    <>
+      <main className="min-h-screen bg-black pb-32">
+        <DetailHero media={movie} trailerKey={trailerKey} />
 
-      <DetailHero media={movie} mediaType="movie" />
-
-      {/* Server selector */}
-      <section className="px-5 py-4">
-        <div className="mx-auto max-w-7xl">
-          <div className="flex items-center gap-3 rounded-xl bg-white/[0.03] border border-white/[0.06] p-3">
-            <Server size={16} className="text-white/40" aria-hidden="true" />
-            <span className="text-sm text-white/70">VidRift</span>
-            <span className="rounded-full bg-green-500/20 px-2 py-0.5 text-[10px] font-medium text-green-400">stable</span>
-            <span className="text-[10px] text-white/30">· fast</span>
-            <div className="ml-auto flex gap-2">
-              <button className="flex h-8 items-center gap-1.5 rounded-lg bg-white/5 px-3 text-xs text-white/60 hover:bg-white/10" aria-label="Download">
-                <Download size={14} aria-hidden="true" /> Download
-              </button>
-              <button className="flex h-8 items-center gap-1.5 rounded-lg bg-white/5 px-3 text-xs text-white/60 hover:bg-white/10" aria-label="Share">
-                <Share2 size={14} aria-hidden="true" /> Share
-              </button>
+        {/* Info */}
+        <section className="px-5 py-6" aria-label="Movie information">
+          <div className="mx-auto max-w-3xl">
+            <div className="flex flex-wrap items-center gap-3 text-sm text-muted">
+              {year && (
+                <span className="flex items-center gap-1">
+                  <Calendar size={14} aria-hidden="true" />
+                  {year}
+                </span>
+              )}
+              {movie.runtime > 0 && (
+                <span className="flex items-center gap-1">
+                  <Clock size={14} aria-hidden="true" />
+                  {formatRuntime(movie.runtime)}
+                </span>
+              )}
+              {movie.vote_average > 0 && (
+                <span className="flex items-center gap-1 text-yellow-400">
+                  <Star size={14} className="fill-yellow-400" aria-hidden="true" />
+                  {Math.round(movie.vote_average * 10) / 10}
+                </span>
+              )}
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Stream prep */}
-      <section className="px-5 pb-4">
-        <div className="mx-auto max-w-7xl">
-          <div className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-4 text-center">
-            <p className="text-xs font-medium uppercase tracking-wider text-white/40">Preparing your stream</p>
-            <div className="mx-auto mt-2 h-1 w-32 overflow-hidden rounded-full bg-white/10">
-              <div className="h-full w-2/3 rounded-full bg-white/40 animate-pulse" />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Cast */}
-      {credits?.cast?.length > 0 && <CastList cast={credits.cast} />}
-
-      {/* More Like This */}
-      {similar?.results?.length > 0 && (
-        <section className="px-5 py-6">
-          <div className="mx-auto max-w-7xl">
-            <h2 className="mb-4 text-lg font-bold text-white">More Like This</h2>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-              {similar.results.slice(0, 8).map((item: any, i: number) => (
-                <motion.div key={item.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-                  <Link href={`/movie/${item.id}`} className="block">
-                    <div className="relative aspect-[16/10] overflow-hidden rounded-2xl bg-surface">
-                      <img src={`https://image.tmdb.org/t/p/w500${item.backdrop_path || item.poster_path}`} alt={item.title} className="h-full w-full object-cover" />
-                    </div>
-                    <div className="mt-2">
-                      <h3 className="truncate text-sm font-semibold text-white">{item.title}</h3>
-                      <p className="text-xs text-white/50">{item.release_date ? new Date(item.release_date).getFullYear() : "N/A"}</p>
-                    </div>
-                  </Link>
-                </motion.div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {movie.genres?.map((genre: any) => (
+                <Link
+                  key={genre.id}
+                  href={`/movies?genre=${genre.id}`}
+                  className="rounded-full border border-white/[0.06] bg-white/[0.02] px-3 py-1 text-xs text-white/70 transition-colors hover:bg-white/[0.06]"
+                >
+                  {genre.name}
+                </Link>
               ))}
+            </div>
+
+            <p className="mt-4 text-sm leading-relaxed text-white/80">
+              {movie.overview}
+            </p>
+
+            <div className="mt-5 flex gap-3">
+              <Link
+                href={`/watch/${id}`}
+                className="flex flex-1 items-center justify-center gap-2 rounded-full bg-white py-3 text-sm font-semibold text-black transition-transform active:scale-95"
+              >
+                <Play size={16} fill="black" aria-hidden="true" />
+                Watch Now
+              </Link>
+              <button
+                onClick={handleWatchlistToggle}
+                className={cn(
+                  "flex flex-1 items-center justify-center gap-2 rounded-full border py-3 text-sm font-semibold transition-colors",
+                  inWatchlist
+                    ? "border-white/20 bg-white text-black"
+                    : "border-white/20 bg-white/[0.04] text-white hover:bg-white/[0.08]"
+                )}
+                aria-label={inWatchlist ? "Remove from watchlist" : "Add to watchlist"}
+              >
+                {inWatchlist ? (
+                  <Check size={16} aria-hidden="true" />
+                ) : (
+                  <Plus size={16} aria-hidden="true" />
+                )}
+                {inWatchlist ? "In Watchlist" : "My List"}
+              </button>
             </div>
           </div>
         </section>
-      )}
 
-      <ContinueWatching />
-    </main>
+        {/* Stream Server */}
+        <section className="px-5 py-4" aria-label="Stream">
+          <div className="mx-auto max-w-3xl">
+            <div className="mb-3">
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-widest text-muted">
+                Server
+              </label>
+              <button className="flex w-full items-center justify-between rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-sm text-white">
+                <span>VidRift · stable · fast</span>
+                <ChevronDown size={16} className="text-muted" />
+              </button>
+            </div>
+
+            <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0a0a0a]">
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-red-500">
+                  VidRift · Stream
+                </p>
+                <h3 className="mt-2 text-xl font-bold text-white">
+                  PREPARING YOUR STREAM
+                </h3>
+                <p className="mt-1 text-sm text-muted">Locating a server</p>
+                <div className="mt-4 h-1 w-64 overflow-hidden rounded-full bg-white/[0.06]">
+                  <div className="h-full w-1/3 animate-pulse rounded-full bg-white/20" />
+                </div>
+                <div className="mt-2 flex w-64 justify-between text-[10px] text-muted">
+                  <span>INITIALIZING</span>
+                  <span>0%</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-3 flex gap-3">
+              <button className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] py-3 text-sm font-medium text-white">
+                <Download size={16} />
+                Download
+              </button>
+              <button className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] py-3 text-sm font-medium text-white">
+                <Share2 size={16} />
+                Share
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Cast */}
+        {credits?.cast && credits.cast.length > 0 && (
+          <CastList cast={credits.cast} />
+        )}
+
+        {/* Similar */}
+        {similar?.results && similar.results.length > 0 && (
+          <ContentSection title="More Like This" items={similar.results.slice(0, 12)} />
+        )}
+      </main>
+      <Navigation />
+    </>
   )
 }
