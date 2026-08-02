@@ -140,3 +140,50 @@ body {
     --line: rgba(255,255,255,0.3);
   }
 }
+
+
+/* Toggle switch component */
+.toggle-switch {
+  position: relative;
+  width: 48px;
+  height: 28px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  padding: 0;
+  min-width: 48px;
+  min-height: 28px;
+  flex-shrink: 0;
+}
+
+.toggle-switch i {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: white;
+  transition: transform 0.2s ease;
+  display: block;
+  pointer-events: none;
+}
+
+.toggle-switch[data-active="true"] {
+  background: white;
+}
+
+.toggle-switch[data-active="true"] i {
+  transform: translateX(20px);
+  background: black;
+}
+
+/* Bottom sheet drag handle */
+.drag-handle {
+  width: 40px;
+  height: 4px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.2);
+}
