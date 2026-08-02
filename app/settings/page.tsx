@@ -104,6 +104,17 @@ export default function SettingsPage() {
             </div>
           </div>
 
+          {/* Ads Blocked */}
+          <div className="border-t border-white/[0.06] px-6 py-4">
+            <div className="flex items-center justify-between rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
+              <div className="flex items-center gap-2">
+                <Shield size={14} className="text-muted" aria-hidden="true" />
+                <span className="text-sm text-white/80">Ads blocked</span>
+              </div>
+              <span className="text-xs text-muted">Session</span>
+            </div>
+          </div>
+
           {/* Preferences */}
           <div className="border-t border-white/[0.06] px-6 py-4">
             <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted">
