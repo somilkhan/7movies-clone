@@ -259,6 +259,65 @@ docs: update README with deploy URL
 
 ---
 
+---
+
+## 💬 How to Start a New Chat (For Users)
+
+### If you want to CONTINUE work:
+
+Paste this exact prompt:
+```
+Continue the 7movies-clone project.
+
+REPO: https://github.com/somilkhan/7movies-clone
+BRANCH: main
+
+Read .github/AGENT_INSTRUCTIONS.md first, then HANDOFF.md, then continue where HANDOFF.md says to continue.
+```
+
+### If you found a BUG:
+
+Paste this exact prompt + fill in the blanks:
+```
+Bug report — 7movies-clone
+
+REPO: https://github.com/somilkhan/7movies-clone
+BRANCH: main
+
+Read .github/AGENT_INSTRUCTIONS.md first, then HANDOFF.md.
+
+Bug: [short description]
+URL: [page where it happens]
+Device: [Mobile/Desktop]
+Browser: [Chrome/Safari/etc]
+
+Steps:
+1. [step 1]
+2. [step 2]
+3. [step 3]
+
+Expected: [what should happen]
+Actual: [what happens instead]
+
+[Attach screenshot if possible]
+```
+
+### If you want a NEW FEATURE:
+
+Paste this exact prompt:
+```
+New feature for 7movies-clone.
+
+REPO: https://github.com/somilkhan/7movies-clone
+BRANCH: main
+
+Read .github/AGENT_INSTRUCTIONS.md first, then HANDOFF.md.
+
+Feature: [describe what you want]
+Why: [why you want it]
+Reference: [screenshot/link to similar feature]
+```
+
 ## 🐛 Bug Reporting Workflow
 
 ### For Users (You)
