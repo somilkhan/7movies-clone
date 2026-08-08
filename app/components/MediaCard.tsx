@@ -39,6 +39,11 @@ function CardPoster({ path, alt, eager }: { path: string | null; alt: string; ea
 }
 
 export function MediaCard({ media, index = 0, ranked, rank, variant = "portrait", progress, onRemove }: MediaCardProps) {
+  // Guard against undefined/missing ID
+  if (!media || !media.id) {
+    return null
+  }
+
   const title = media.title || media.name || "Untitled"
   const year = getYear(media.release_date || media.first_air_date)
   const href = media.media_type === "tv" || (media as any).first_air_date ? `/tv/${media.id}` : `/movie/${media.id}`

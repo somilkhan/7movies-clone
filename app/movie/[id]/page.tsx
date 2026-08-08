@@ -9,6 +9,15 @@ import { MediaCard } from "@/app/components/MediaCard"
 
 export default function MovieDetailPage({ params }: { params: { id: string } }) {
   const { id } = params
+  if (!id || id === "undefined") {
+    return (
+      <div className="detail-page">
+        <div className="detail-hero" style={{ display: "grid", placeItems: "center", minHeight: "50vh" }}>
+          <p style={{ color: "#888" }}>Invalid movie ID</p>
+        </div>
+      </div>
+    )
+  }
   const router = useRouter()
   const { data: movie, isLoading } = useMovieDetails(id)
   const { data: similar } = useSimilar(Number(id), "movie")

@@ -99,9 +99,22 @@ function CookieRefreshModal({ onClose, onSubmit }: { onClose: () => void; onSubm
   )
 }
 
+function isValidId(id: string): boolean {
+  return !!id && id !== "undefined" && !isNaN(Number(id))
+}
+
 export default function WatchPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const searchParams = useSearchParams()
+
+  if (!isValidId(id)) {
+    return (
+      <div className="watch-page" style={{ display: "grid", placeItems: "center", minHeight: "100vh" }}>
+        <p style={{ color: "#888" }}>Invalid watch ID</p>
+      </div>
+    )
+  }
+
   const type = searchParams.get("type") || "movie"
   const initialSeason = Number(searchParams.get("s") || "1")
   const initialEpisode = Number(searchParams.get("e") || "1")
