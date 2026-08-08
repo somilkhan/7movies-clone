@@ -2,25 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 
 const NETMIRROR_BASE = "https://net77.cc"
 
-function parseCookies(cookieStr: string): Record<string, string> {
-  const cookies: Record<string, string> = {}
-  cookieStr.split(";").forEach((pair) => {
-    const [name, ...rest] = pair.trim().split("=")
-    if (name && rest.length > 0) {
-      cookies[name.trim()] = rest.join("=").trim()
-    }
-  })
-  return cookies
-}
-
-function buildCookieHeader(cookies: Record<string, string>): string {
-  return Object.entries(cookies)
-    .map(([k, v]) => `${k}=${v}`)
-    .join("; ")
-}
-
 export async function GET(req: NextRequest) {
-  /* Try cookies from multiple sources: env > header > query param */
   const headerCookies = req.headers.get("x-nm-cookies") || ""
   const queryCookies = new URL(req.url).searchParams.get("cookies") || ""
   const cookieStr = process.env.NETMIRROR_COOKIES || headerCookies || queryCookies
@@ -32,7 +14,6 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  const cookies = parseCookies(cookieStr)
   const { searchParams } = new URL(req.url)
   const id = searchParams.get("id")
   const type = searchParams.get("type") || "movie"
@@ -43,7 +24,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "MISSING_ID" }, { status: 400 })
   }
 
-  const cookieHeader = buildCookieHeader(cookies)
   const timestamp = Math.floor(Date.now() / 1000)
 
   const headers: Record<string, string> = {
@@ -53,7 +33,7 @@ export async function GET(req: NextRequest) {
     "Referer": `${NETMIRROR_BASE}/home`,
     "Origin": NETMIRROR_BASE,
     "X-Requested-With": "XMLHttpRequest",
-    "Cookie": cookieHeader,
+    "Cookie": cookieStr,
   }
 
   try {
@@ -65,10 +45,14 @@ export async function GET(req: NextRequest) {
     try {
       postData = JSON.parse(postText)
     } catch {
-      return NextResponse.json(
-        { error: "POST_PARSE_ERROR", raw: postText.slice(0, 200) },
-        { status: 500 }
-      )
+      return NextResponse.json({
+        error: "POST_PARSE_ERROR",
+        status: postRes.status,
+        statusText: postRes.statusText,
+        contentType: postRes.headers.get("content-type"),
+        raw: postText.slice(0, 800),
+        rawLength: postText.length,
+      }, { status: 500 })
     }
 
     if (postData.status === "n" && postData.error === "Invalid User") {
@@ -80,7 +64,7 @@ export async function GET(req: NextRequest) {
 
     if (postData.status !== "y") {
       return NextResponse.json(
-        { error: "POST_FAILED", message: postData.error || "Unknown error" },
+        { error: "POST_FAILED", message: postData.error || "Unknown error", postData },
         { status: 500 }
       )
     }
@@ -128,10 +112,11 @@ export async function GET(req: NextRequest) {
     try {
       playData = JSON.parse(playText)
     } catch {
-      return NextResponse.json(
-        { error: "PLAY_PARSE_ERROR", raw: playText.slice(0, 200) },
-        { status: 500 }
-      )
+      return NextResponse.json({
+        error: "PLAY_PARSE_ERROR",
+        status: playRes.status,
+        raw: playText.slice(0, 500),
+      }, { status: 500 })
     }
 
     if (!playData.h) {
@@ -139,17 +124,6 @@ export async function GET(req: NextRequest) {
         { error: "PLAY_NO_HASH", raw: playText.slice(0, 200) },
         { status: 500 }
       )
-    }
-
-    try {
-      const recentBody = new URLSearchParams({ recentplay: `SE${id}` })
-      await fetch(`${NETMIRROR_BASE}/recentplay.php`, {
-        method: "POST",
-        headers: { ...headers, "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" },
-        body: recentBody.toString(),
-      })
-    } catch {
-      /* ignore */
     }
 
     return NextResponse.json({
@@ -177,11 +151,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const { cookies } = await req.json()
-
   if (!cookies || typeof cookies !== "string") {
     return NextResponse.json({ error: "MISSING_COOKIES" }, { status: 400 })
   }
-
   return NextResponse.json({
     success: true,
     message: "Cookies received. Add to .env.local: NETMIRROR_COOKIES=your_cookies",
