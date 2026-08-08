@@ -244,8 +244,10 @@ export default function WatchPage({ params }: { params: Promise<{ id: string }> 
     setServerError(`Failed to load ${currentServer.name}. Try another server.`)
   }, [currentServer])
 
+  const hasSavedRef = useRef(false)
   useEffect(() => {
-    if (!media) return
+    if (!media || hasSavedRef.current) return
+    hasSavedRef.current = true
     addToContinueWatching({
       id: media.id,
       type: type as "movie" | "tv",
@@ -259,7 +261,7 @@ export default function WatchPage({ params }: { params: Promise<{ id: string }> 
       episodeName: type === "tv" ? episodes[currentEpIndex]?.name : undefined,
       timestamp: Date.now(),
     })
-  }, [media, type, title, posterPath, seasonNum, episodeNum, currentEpIndex, episodes, addToContinueWatching])
+  }, [media])
 
   useEffect(() => {
     const handleMessage = (e: MessageEvent) => {
