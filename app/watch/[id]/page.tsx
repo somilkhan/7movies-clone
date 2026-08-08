@@ -189,10 +189,18 @@ export default function WatchPage({ params }: { params: Promise<{ id: string }> 
       setIframeLoading(true)
       setServerError(null)
       try {
+        /* Get cookies from localStorage if available */
+        const savedCookies = typeof window !== "undefined" ? localStorage.getItem("7movies-nm-cookies") : null
         const url = type === "tv"
           ? `/api/proxy/netmirror?id=${netflixId}&type=tv&s=${seasonNum}&e=${episodeNum}`
           : `/api/proxy/netmirror?id=${netflixId}&type=movie`
-        const res = await fetch(url)
+        
+        const headers: Record<string, string> = {}
+        if (savedCookies) {
+          headers["x-nm-cookies"] = savedCookies
+        }
+        
+        const res = await fetch(url, { headers })
         const data = await res.json()
 
         if (data.error === "COOKIES_EXPIRED" || data.error === "COOKIES_MISSING") {

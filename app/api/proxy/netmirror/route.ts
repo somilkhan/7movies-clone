@@ -20,7 +20,11 @@ function buildCookieHeader(cookies: Record<string, string>): string {
 }
 
 export async function GET(req: NextRequest) {
-  const cookieStr = process.env.NETMIRROR_COOKIES || ""
+  /* Try cookies from multiple sources: env > header > query param */
+  const headerCookies = req.headers.get("x-nm-cookies") || ""
+  const queryCookies = new URL(req.url).searchParams.get("cookies") || ""
+  const cookieStr = process.env.NETMIRROR_COOKIES || headerCookies || queryCookies
+
   if (!cookieStr) {
     return NextResponse.json(
       { error: "COOKIES_MISSING", message: "NetMirror cookies not configured" },
