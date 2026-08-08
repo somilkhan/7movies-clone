@@ -1,0 +1,11 @@
+7Movies handoff package
+
+README.md — package guide
+CAPTURE_CHECKLIST.md — requirements and status
+SITE_OBSERVATIONS.md — dated live-site observations
+MISSING_OR_NEEDS_CAPTURE.md — remaining evidence gaps
+package-metadata.json — machine-readable metadata
+materials/original-upload/ — original checklist, six screenshots, and recording
+live-snapshot/ — screenshot, HTML response, headers, linked CSS
+video-storyboard/ — compact preview of the recording
+MANIFEST.sha256 — checksums

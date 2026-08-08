@@ -1,0 +1,9 @@
+{
+  "target": "https://7movies.in/",
+  "prepared": "2026-08-03",
+  "title": "7Movies — Watch something unforgettable",
+  "http_status": 200,
+  "supplied_video_duration_seconds": 64.397417,
+  "original_materials_preserved": true,
+  "evidence_gaps": ["browser-rendered outerHTML", "console errors screenshot", "Fetch/XHR network screenshot", "labeled computed-style screenshots"]
+}
