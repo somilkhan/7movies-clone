@@ -33,6 +33,17 @@ export async function upsertContinueWatching(
   return data as ContinueWatchingRow
 }
 
+export async function deleteContinueWatching(userId: string, contentKey: string) {
+  const supabase = createClient()
+  const { error } = await supabase
+    .from("continue_watching")
+    .delete()
+    .eq("user_id", userId)
+    .eq("content_key", contentKey)
+
+  if (error) throw error
+}
+
 export async function getWatchlist(userId: string) {
   const supabase = createClient()
   const { data, error } = await supabase
