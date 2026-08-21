@@ -48,16 +48,11 @@ export const useAppStore = create<AppState>()(
       cloudUserId: null,
       setCloudUserId: (userId) => set({ cloudUserId: userId }),
       hydrateCloudState: (watchlist, continueWatching) => set({ watchlist, continueWatching }),
-
       watchlist: [],
       addToWatchlist: (id, mediaType) => {
         const userId = get().cloudUserId
         const addedAt = new Date().toISOString()
-        set((state) => ({
-          watchlist: state.watchlist.some((item) => item.id === id)
-            ? state.watchlist
-            : [...state.watchlist, { id, mediaType, addedAt }],
-        }))
+        set((state) => ({ watchlist: state.watchlist.some((item) => item.id === id) ? state.watchlist : [...state.watchlist, { id, mediaType, addedAt }] }))
         if (userId) void setWatchlistItem(userId, { tmdb_id: id, media_type: mediaType, metadata: {} }).catch(() => undefined)
       },
       removeFromWatchlist: (id) => {
@@ -67,7 +62,6 @@ export const useAppStore = create<AppState>()(
         if (userId && item) void removeWatchlistItem(userId, id, item.mediaType).catch(() => undefined)
       },
       isInWatchlist: (id) => get().watchlist.some((item) => item.id === id),
-
       continueWatching: [],
       addToContinueWatching: (item) => {
         const userId = get().cloudUserId
@@ -90,20 +84,15 @@ export const useAppStore = create<AppState>()(
         const userId = get().cloudUserId
         const item = get().continueWatching.find((entry) => entry.id === id)
         set((state) => ({ continueWatching: state.continueWatching.filter((entry) => entry.id !== id) }))
-        if (userId && item) {
-          void deleteContinueWatching(userId, `${item.type}:${item.id}:${item.season ?? 0}:${item.episode ?? 0}`).catch(() => undefined)
-        }
+        if (userId && item) void deleteContinueWatching(userId, `${item.type}:${item.id}:${item.season ?? 0}:${item.episode ?? 0}`).catch(() => undefined)
       },
       clearContinueWatching: () => {
         const userId = get().cloudUserId
         const items = get().continueWatching
         set({ continueWatching: [] })
-        if (userId) {
-          void Promise.all(items.map((item) => deleteContinueWatching(userId, `${item.type}:${item.id}:${item.season ?? 0}:${item.episode ?? 0}`))).catch(() => undefined)
-        }
+        if (userId) void Promise.all(items.map((item) => deleteContinueWatching(userId, `${item.type}:${item.id}:${item.season ?? 0}:${item.episode ?? 0}`))).catch(() => undefined)
       },
-
-      settings: { ambience: "standard", spoilerProtection: true, reducedMotion: false },
+      settings: { ambience: "standard", spoilerProtection: true, reducedMotion: false, autoplayTrailers: false },
       updateSettings: (newSettings) => set((state) => ({ settings: { ...state.settings, ...newSettings } })),
       hasCompletedOnboarding: false,
       setOnboardingComplete: (value) => set({ hasCompletedOnboarding: value }),
@@ -117,15 +106,7 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: "7movies-storage",
-      partialize: (state) => ({
-        watchlist: state.watchlist,
-        continueWatching: state.continueWatching,
-        settings: state.settings,
-        hasCompletedOnboarding: state.hasCompletedOnboarding,
-        selectedGenres: state.selectedGenres,
-        searchHistory: state.searchHistory,
-        activeTab: state.activeTab,
-      }),
+      partialize: (state) => ({ watchlist: state.watchlist, continueWatching: state.continueWatching, settings: state.settings, hasCompletedOnboarding: state.hasCompletedOnboarding, selectedGenres: state.selectedGenres, searchHistory: state.searchHistory, activeTab: state.activeTab }),
     },
   ),
 )
