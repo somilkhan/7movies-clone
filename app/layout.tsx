@@ -8,6 +8,7 @@ import { KeyboardShortcuts } from "./components/KeyboardShortcuts"
 import { SkipLink } from "./components/SkipLink"
 import { ReducedMotionProvider } from "./components/ReducedMotionProvider"
 import { DialogRenderer } from "./components/DialogRenderer"
+import { SupabaseSessionProvider } from "./components/SupabaseSessionProvider"
 
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope", display: "swap", weight: ["400", "500", "600", "700"] })
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk", display: "swap", weight: ["400", "500", "600", "700"] })
@@ -29,20 +30,10 @@ export const metadata: Metadata = {
     siteName: "7Movies",
     locale: "en_US",
   },
-  twitter: {
-    card: "summary_large_image",
-    title: "7Movies — Watch something unforgettable",
-    description: "A quiet place for loud stories.",
-  },
+  twitter: { card: "summary_large_image", title: "7Movies — Watch something unforgettable", description: "A quiet place for loud stories." },
   alternates: { canonical: "https://7movies-clone.vercel.app" },
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "7Movies",
-  },
-  other: {
-    "mobile-web-app-capable": "yes",
-  },
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "7Movies" },
+  other: { "mobile-web-app-capable": "yes" },
 }
 
 export const viewport: Viewport = {
@@ -62,18 +53,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="font-manrope">
         <ReducedMotionProvider>
-          <QueryProvider>
-            <SkipLink />
-            <div className="site-shell ambience-standard min-h-screen overflow-hidden">
-              <Topbar />
-              <main id="main-content">
-                {children}
-              </main>
-            </div>
-            <ToastContainer />
-            <DialogRenderer />
-            <KeyboardShortcuts />
-          </QueryProvider>
+          <SupabaseSessionProvider>
+            <QueryProvider>
+              <SkipLink />
+              <div className="site-shell ambience-standard min-h-screen overflow-hidden">
+                <Topbar />
+                <main id="main-content">{children}</main>
+              </div>
+              <ToastContainer />
+              <DialogRenderer />
+              <KeyboardShortcuts />
+            </QueryProvider>
+          </SupabaseSessionProvider>
         </ReducedMotionProvider>
       </body>
     </html>
