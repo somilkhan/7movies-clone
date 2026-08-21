@@ -9,10 +9,7 @@ interface SupabaseSessionContextValue {
   ready: boolean
 }
 
-const SupabaseSessionContext = createContext<SupabaseSessionContextValue>({
-  user: null,
-  ready: false,
-})
+const SupabaseSessionContext = createContext<SupabaseSessionContextValue>({ user: null, ready: false })
 
 export function SupabaseSessionProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -20,37 +17,37 @@ export function SupabaseSessionProvider({ children }: { children: React.ReactNod
 
   useEffect(() => {
     let mounted = true
-    const supabase = createClient()
+    let subscription: { unsubscribe: () => void } | undefined
 
     const bootstrap = async () => {
-      const { data } = await supabase.auth.getUser()
+      try {
+        const supabase = createClient()
+        const { data } = await supabase.auth.getUser()
 
-      if (data.user) {
-        if (mounted) {
-          setUser(data.user)
-          setReady(true)
+        if (data.user) {
+          if (mounted) setUser(data.user)
+        } else {
+          const { data: anonymous } = await supabase.auth.signInAnonymously()
+          if (mounted) setUser(anonymous.user ?? null)
         }
-        return
-      }
 
-      const { data: anonymous, error } = await supabase.auth.signInAnonymously()
-      if (mounted) {
-        if (!error) setUser(anonymous.user)
-        setReady(true)
+        const authState = supabase.auth.onAuthStateChange((_event, session) => {
+          if (!mounted) return
+          setUser(session?.user ?? null)
+        })
+        subscription = authState.data.subscription
+      } catch {
+        // Supabase is an enhancement to anonymous browsing; never block the app shell.
+      } finally {
+        if (mounted) setReady(true)
       }
     }
 
     void bootstrap()
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!mounted) return
-      setUser(session?.user ?? null)
-      setReady(true)
-    })
-
     return () => {
       mounted = false
-      listener.subscription.unsubscribe()
+      subscription?.unsubscribe()
     }
   }, [])
 
