@@ -2,8 +2,8 @@
 
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
-import { WatchlistItem, ContinueWatchingItem, AmbienceTheme, AppSettings } from "@/types"
-import { removeWatchlistItem, setWatchlistItem, upsertContinueWatching } from "@/lib/supabase/media-state"
+import { WatchlistItem, ContinueWatchingItem, AppSettings } from "@/types"
+import { deleteContinueWatching, removeWatchlistItem, setWatchlistItem, upsertContinueWatching } from "@/lib/supabase/media-state"
 
 interface AppState {
   activeTab: string
@@ -12,21 +12,17 @@ interface AppState {
   setSearchOpen: (open: boolean) => void
   accountOpen: boolean
   setAccountOpen: (open: boolean) => void
-
   cloudUserId: string | null
   setCloudUserId: (userId: string | null) => void
   hydrateCloudState: (watchlist: WatchlistItem[], continueWatching: ContinueWatchingItem[]) => void
-
   watchlist: WatchlistItem[]
   addToWatchlist: (id: number, mediaType: "movie" | "tv") => void
   removeFromWatchlist: (id: number) => void
   isInWatchlist: (id: number) => boolean
-
   continueWatching: ContinueWatchingItem[]
   addToContinueWatching: (item: ContinueWatchingItem) => void
   removeFromContinueWatching: (id: number) => void
   clearContinueWatching: () => void
-
   settings: AppSettings
   updateSettings: (settings: Partial<AppSettings>) => void
   hasCompletedOnboarding: boolean
@@ -49,7 +45,6 @@ export const useAppStore = create<AppState>()(
       setSearchOpen: (open) => set({ searchOpen: open }),
       accountOpen: false,
       setAccountOpen: (open) => set({ accountOpen: open }),
-
       cloudUserId: null,
       setCloudUserId: (userId) => set({ cloudUserId: userId }),
       hydrateCloudState: (watchlist, continueWatching) => set({ watchlist, continueWatching }),
@@ -57,14 +52,13 @@ export const useAppStore = create<AppState>()(
       watchlist: [],
       addToWatchlist: (id, mediaType) => {
         const userId = get().cloudUserId
+        const addedAt = new Date().toISOString()
         set((state) => ({
           watchlist: state.watchlist.some((item) => item.id === id)
             ? state.watchlist
-            : [...state.watchlist, { id, mediaType, addedAt: new Date().toISOString() }],
+            : [...state.watchlist, { id, mediaType, addedAt }],
         }))
-        if (userId) {
-          void setWatchlistItem(userId, { tmdb_id: id, media_type: mediaType, metadata: {} }).catch(() => undefined)
-        }
+        if (userId) void setWatchlistItem(userId, { tmdb_id: id, media_type: mediaType, metadata: {} }).catch(() => undefined)
       },
       removeFromWatchlist: (id) => {
         const userId = get().cloudUserId
@@ -92,8 +86,22 @@ export const useAppStore = create<AppState>()(
           }).catch(() => undefined)
         }
       },
-      removeFromContinueWatching: (id) => set((state) => ({ continueWatching: state.continueWatching.filter((item) => item.id !== id) })),
-      clearContinueWatching: () => set({ continueWatching: [] }),
+      removeFromContinueWatching: (id) => {
+        const userId = get().cloudUserId
+        const item = get().continueWatching.find((entry) => entry.id === id)
+        set((state) => ({ continueWatching: state.continueWatching.filter((entry) => entry.id !== id) }))
+        if (userId && item) {
+          void deleteContinueWatching(userId, `${item.type}:${item.id}:${item.season ?? 0}:${item.episode ?? 0}`).catch(() => undefined)
+        }
+      },
+      clearContinueWatching: () => {
+        const userId = get().cloudUserId
+        const items = get().continueWatching
+        set({ continueWatching: [] })
+        if (userId) {
+          void Promise.all(items.map((item) => deleteContinueWatching(userId, `${item.type}:${item.id}:${item.season ?? 0}:${item.episode ?? 0}`))).catch(() => undefined)
+        }
+      },
 
       settings: { ambience: "standard", spoilerProtection: true, reducedMotion: false },
       updateSettings: (newSettings) => set((state) => ({ settings: { ...state.settings, ...newSettings } })),
