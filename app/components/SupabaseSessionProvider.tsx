@@ -3,6 +3,8 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import type { User } from "@supabase/supabase-js"
 import { createClient } from "@/lib/supabase/client"
+import { useAppStore } from "@/stores/useAppStore"
+import { SupabaseMediaSync } from "./SupabaseMediaSync"
 
 interface SupabaseSessionContextValue {
   user: User | null
@@ -14,6 +16,7 @@ const SupabaseSessionContext = createContext<SupabaseSessionContextValue>({ user
 export function SupabaseSessionProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [ready, setReady] = useState(false)
+  const setCloudUserId = useAppStore((state) => state.setCloudUserId)
 
   useEffect(() => {
     let mounted = true
@@ -23,21 +26,30 @@ export function SupabaseSessionProvider({ children }: { children: React.ReactNod
       try {
         const supabase = createClient()
         const { data } = await supabase.auth.getUser()
+        let nextUser = data.user
 
-        if (data.user) {
-          if (mounted) setUser(data.user)
-        } else {
+        if (!nextUser) {
           const { data: anonymous } = await supabase.auth.signInAnonymously()
-          if (mounted) setUser(anonymous.user ?? null)
+          nextUser = anonymous.user ?? null
+        }
+
+        if (mounted) {
+          setUser(nextUser)
+          setCloudUserId(nextUser?.id ?? null)
         }
 
         const authState = supabase.auth.onAuthStateChange((_event, session) => {
           if (!mounted) return
-          setUser(session?.user ?? null)
+          const next = session?.user ?? null
+          setUser(next)
+          setCloudUserId(next?.id ?? null)
         })
         subscription = authState.data.subscription
       } catch {
-        // Supabase is an enhancement to anonymous browsing; never block the app shell.
+        if (mounted) {
+          setUser(null)
+          setCloudUserId(null)
+        }
       } finally {
         if (mounted) setReady(true)
       }
@@ -49,11 +61,16 @@ export function SupabaseSessionProvider({ children }: { children: React.ReactNod
       mounted = false
       subscription?.unsubscribe()
     }
-  }, [])
+  }, [setCloudUserId])
 
   const value = useMemo(() => ({ user, ready }), [user, ready])
 
-  return <SupabaseSessionContext.Provider value={value}>{children}</SupabaseSessionContext.Provider>
+  return (
+    <SupabaseSessionContext.Provider value={value}>
+      {children}
+      <SupabaseMediaSync />
+    </SupabaseSessionContext.Provider>
+  )
 }
 
 export function useSupabaseSession() {
