@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
-import { getContinueWatching, getWatchlist, subscribeToMediaState } from "@/lib/supabase/media-state"
+import { getContinueWatching, getWatchlist, setWatchlistItem, subscribeToMediaState, upsertContinueWatching } from "@/lib/supabase/media-state"
 import { useAppStore } from "@/stores/useAppStore"
 import type { ContinueWatchingItem, WatchlistItem } from "@/types"
 
@@ -25,6 +25,20 @@ function mapContinueWatchingRecord(row: MediaRecord): ContinueWatchingItem {
   }
 }
 
+function toContinueWatchingRow(item: ContinueWatchingItem) {
+  return {
+    content_key: `${item.type}:${item.id}:${item.season ?? 0}:${item.episode ?? 0}`,
+    tmdb_id: item.id,
+    media_type: item.type,
+    season_number: item.season ?? null,
+    episode_number: item.episode ?? null,
+    progress_seconds: Math.max(0, Math.floor(item.watched)),
+    duration_seconds: item.duration > 0 ? Math.floor(item.duration) : null,
+    metadata: { title: item.title, poster: item.poster, backdrop: item.backdrop, episodeName: item.episodeName },
+    updated_at: new Date(item.timestamp || Date.now()).toISOString(),
+  }
+}
+
 export function SupabaseMediaSync() {
   const userId = useAppStore((state) => state.cloudUserId)
   const hydrateCloudState = useAppStore((state) => state.hydrateCloudState)
@@ -35,19 +49,29 @@ export function SupabaseMediaSync() {
 
     const hydrate = async () => {
       try {
-        const [watchlist, continueWatching] = await Promise.all([getWatchlist(userId), getContinueWatching(userId)])
+        const [cloudWatchlist, cloudContinueWatching] = await Promise.all([getWatchlist(userId), getContinueWatching(userId)])
         if (!active) return
 
-        const cloudWatchlist: WatchlistItem[] = watchlist.map((item) => ({
-          id: item.tmdb_id,
-          mediaType: item.media_type as "movie" | "tv",
-          addedAt: item.added_at,
-        }))
-        const cloudContinue = continueWatching.map(mapContinueWatchingRecord)
         const state = useAppStore.getState()
-        hydrateCloudState(cloudWatchlist.length ? cloudWatchlist : state.watchlist, cloudContinue.length ? cloudContinue : state.continueWatching)
+        const localWatchlist = state.watchlist
+        const localContinue = state.continueWatching
+        const cloudWatchlistItems: WatchlistItem[] = cloudWatchlist.map((item) => ({ id: item.tmdb_id, mediaType: item.media_type as "movie" | "tv", addedAt: item.added_at }))
+        const cloudContinueItems = cloudContinueWatching.map(mapContinueWatchingRecord)
+
+        const cloudWatchlistKeys = new Set(cloudWatchlistItems.map((item) => `${item.mediaType}:${item.id}`))
+        const localOnlyWatchlist = localWatchlist.filter((item) => !cloudWatchlistKeys.has(`${item.mediaType}:${item.id}`))
+        const cloudContinueKeys = new Set(cloudContinueItems.map((item) => `${item.type}:${item.id}:${item.season ?? 0}:${item.episode ?? 0}`))
+        const localOnlyContinue = localContinue.filter((item) => !cloudContinueKeys.has(`${item.type}:${item.id}:${item.season ?? 0}:${item.episode ?? 0}`))
+
+        await Promise.all([
+          ...localOnlyWatchlist.map((item) => setWatchlistItem(userId, { tmdb_id: item.id, media_type: item.mediaType, metadata: {} })),
+          ...localOnlyContinue.map((item) => upsertContinueWatching(userId, toContinueWatchingRow(item))),
+        ])
+
+        if (!active) return
+        hydrateCloudState([...cloudWatchlistItems, ...localOnlyWatchlist], [...cloudContinueItems, ...localOnlyContinue].slice(0, 20))
       } catch {
-        // Keep local state when cloud hydration is unavailable.
+        // Local persisted state remains usable when Supabase is unavailable.
       }
     }
 
@@ -62,10 +86,9 @@ export function SupabaseMediaSync() {
       const state = useAppStore.getState()
       if (table === "watchlist" && record.tmdb_id && record.media_type) {
         const id = Number(record.tmdb_id)
-        const next = state.watchlist.filter((item) => item.id !== id)
-        if (event.eventType !== "DELETE") {
-          next.push({ id, mediaType: String(record.media_type) as "movie" | "tv", addedAt: String(record.added_at ?? new Date().toISOString()) })
-        }
+        const mediaType = String(record.media_type) as "movie" | "tv"
+        const next = state.watchlist.filter((item) => !(item.id === id && item.mediaType === mediaType))
+        if (event.eventType !== "DELETE") next.push({ id, mediaType, addedAt: String(record.added_at ?? new Date().toISOString()) })
         hydrateCloudState(next, state.continueWatching)
       }
 
