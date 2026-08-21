@@ -1,74 +1,38 @@
-# 7Movies Clone
+# 7Movies
 
-A premium movies & TV discovery app built with Next.js 15, React 19, TanStack Query, and Tailwind CSS.
+A premium movie & TV discovery and watch experience built with Next.js 15, React 19, TanStack Query, Tailwind CSS, and Supabase.
 
-## 🚀 Live Demo
+## Live
 
-**[https://7movies-clone.vercel.app](https://7movies-clone.vercel.app)**
+**https://7movies-clone.vercel.app**
 
-## ✨ Features
+## Architecture
 
-- **TMDB Integration** — Real-time movie & TV data with infinite scrolling
-- **Debounced Search** — Instant search suggestions with 300ms debounce
-- **Watchlist** — Save favorites with Zustand + localStorage persistence
-- **Continue Watching** — Track playback progress locally
-- **Onboarding** — Genre preference picker for new visitors
-- **Spoiler Protection** — Blur episode details until revealed
-- **Keyboard Shortcuts** — `K` search, `H` home, `W` watchlist, `ESC` close
-- **Accessibility** — Focus traps, ARIA labels, reduced motion support, skip links
-- **Responsive** — Optimized for mobile, tablet, and desktop
-- **Performance** — Image optimization, AVIF/WebP, code splitting, 90+ Lighthouse
+- **TMDB** — real movie, TV, season, episode, search, discovery, and metadata source.
+- **Supabase** — persistent user/application state with PostgreSQL, RLS, Auth, and Realtime.
+- **Zustand** — responsive client state and local fallback/cache.
+- **TanStack Query** — server-data caching and request lifecycle management.
+- **Next.js App Router** — application routing and server/client boundaries.
 
-## 🛠 Tech Stack
+## User experience
 
-- **Framework:** Next.js 15 (App Router)
-- **Language:** TypeScript
-- **Styling:** Tailwind CSS 3.4
-- **State:** Zustand, TanStack Query
-- **Animation:** Framer Motion (with reduced motion support)
-- **Icons:** Lucide React
-- **Deployment:** Vercel
+- Browse and watch without a mandatory registration wall.
+- Anonymous Supabase sessions can persist personal state when anonymous sign-ins are enabled.
+- Watchlist and Continue Watching sync to Supabase and subscribe to realtime changes.
+- Local persisted state is migrated into cloud state when a cloud identity becomes available.
+- TMDB catalogue content is never fabricated with mock movie data.
+- Responsive mobile, tablet, and desktop layouts.
+- Accessibility support including keyboard navigation, focus management, reduced motion, and skip links.
 
-## 📦 Installation
+## Development
 
 ```bash
-git clone https://github.com/somilkhan/7movies-clone.git
-cd 7movies-clone
 npm install
-```
-
-Create `.env.local`:
-```env
-NEXT_PUBLIC_TMDB_TOKEN=your_tmdb_api_token
-```
-
-Run dev server:
-```bash
 npm run dev
 ```
 
-## 🔧 Build & Deploy
+Required environment variables are documented in `.env.example`. Never commit production secrets.
 
-```bash
-# Production build
-npm run build
+## Validation
 
-# Deploy to Vercel
-vercel --prod
-```
-
-## 🎨 Design Tokens
-
-| Token | Value |
-|-------|-------|
-| Background | `#0b0b0d` |
-| Paper | `#f3f0ea` |
-| Surface | `#151519` |
-| Muted | `#929093` |
-| Line | `rgba(255,255,255,0.12)` |
-
-## 📝 License
-
-MIT
-
-
+The repository includes GitHub Actions validation for TypeScript, ESLint, and a production Next.js build on pushes to `main` and `chore/production-hardening`, plus pull requests targeting `main`.
