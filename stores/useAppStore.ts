@@ -3,7 +3,7 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { WatchlistItem, ContinueWatchingItem, AppSettings } from "@/types"
-import { deleteContinueWatching, removeWatchlistItem, setWatchlistItem, upsertContinueWatching } from "@/lib/supabase/media-state"
+import { deleteContinueWatching, recordWatchHistory, removeWatchlistItem, setWatchlistItem, upsertContinueWatching, upsertUserPreferences } from "@/lib/supabase/media-state"
 
 interface AppState {
   activeTab: string
@@ -14,7 +14,7 @@ interface AppState {
   setAccountOpen: (open: boolean) => void
   cloudUserId: string | null
   setCloudUserId: (userId: string | null) => void
-  hydrateCloudState: (watchlist: WatchlistItem[], continueWatching: ContinueWatchingItem[]) => void
+  hydrateCloudState: (watchlist: WatchlistItem[], continueWatching: ContinueWatchingItem[], settings?: AppSettings) => void
   watchlist: WatchlistItem[]
   addToWatchlist: (id: number, mediaType: "movie" | "tv") => void
   removeFromWatchlist: (id: number) => void
@@ -47,7 +47,7 @@ export const useAppStore = create<AppState>()(
       setAccountOpen: (open) => set({ accountOpen: open }),
       cloudUserId: null,
       setCloudUserId: (userId) => set({ cloudUserId: userId }),
-      hydrateCloudState: (watchlist, continueWatching) => set({ watchlist, continueWatching }),
+      hydrateCloudState: (watchlist, continueWatching, settings) => set((state) => ({ watchlist, continueWatching, settings: settings ?? state.settings })),
       watchlist: [],
       addToWatchlist: (id, mediaType) => {
         const userId = get().cloudUserId
@@ -66,17 +66,31 @@ export const useAppStore = create<AppState>()(
       addToContinueWatching: (item) => {
         const userId = get().cloudUserId
         set((state) => ({ continueWatching: [item, ...state.continueWatching.filter((entry) => entry.id !== item.id)].slice(0, 20) }))
-        if (userId) {
-          void upsertContinueWatching(userId, {
-            content_key: `${item.type}:${item.id}:${item.season ?? 0}:${item.episode ?? 0}`,
+        if (!userId) return
+
+        const row = {
+          content_key: `${item.type}:${item.id}:${item.season ?? 0}:${item.episode ?? 0}`,
+          tmdb_id: item.id,
+          media_type: item.type,
+          season_number: item.season ?? null,
+          episode_number: item.episode ?? null,
+          progress_seconds: Math.max(0, Math.floor(item.watched)),
+          duration_seconds: item.duration > 0 ? Math.floor(item.duration) : null,
+          metadata: { title: item.title, poster: item.poster, backdrop: item.backdrop, episodeName: item.episodeName },
+          updated_at: new Date(item.timestamp || Date.now()).toISOString(),
+        }
+
+        void upsertContinueWatching(userId, row).catch(() => undefined)
+        if (item.watched > 0) {
+          void recordWatchHistory(userId, {
             tmdb_id: item.id,
             media_type: item.type,
             season_number: item.season ?? null,
             episode_number: item.episode ?? null,
             progress_seconds: Math.max(0, Math.floor(item.watched)),
             duration_seconds: item.duration > 0 ? Math.floor(item.duration) : null,
-            metadata: { title: item.title, poster: item.poster, backdrop: item.backdrop, episodeName: item.episodeName },
-            updated_at: new Date(item.timestamp || Date.now()).toISOString(),
+            metadata: row.metadata,
+            watched_at: new Date(item.timestamp || Date.now()).toISOString(),
           }).catch(() => undefined)
         }
       },
@@ -93,7 +107,12 @@ export const useAppStore = create<AppState>()(
         if (userId) void Promise.all(items.map((item) => deleteContinueWatching(userId, `${item.type}:${item.id}:${item.season ?? 0}:${item.episode ?? 0}`))).catch(() => undefined)
       },
       settings: { ambience: "standard", spoilerProtection: true, reducedMotion: false, autoplayTrailers: false },
-      updateSettings: (newSettings) => set((state) => ({ settings: { ...state.settings, ...newSettings } })),
+      updateSettings: (newSettings) => {
+        const settings = { ...get().settings, ...newSettings }
+        set({ settings })
+        const userId = get().cloudUserId
+        if (userId) void upsertUserPreferences(userId, settings).catch(() => undefined)
+      },
       hasCompletedOnboarding: false,
       setOnboardingComplete: (value) => set({ hasCompletedOnboarding: value }),
       selectedGenres: [],
